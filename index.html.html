@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Ansari Calculator</title>
+
+<style>
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        font-family: Arial, sans-serif;
+    }
+
+    body {
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: linear-white(135deg, #141e30, #243b55);
+    }
+
+    .calculator {
+        width: 330px;
+        padding: 20px;
+        background: #1c1c1c;
+        border-radius: 25px;
+        box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+    }
+
+    .title {
+        color: white;
+        text-align: center;
+        margin-bottom: 15px;
+        font-size: 22px;
+    }
+
+    .display {
+        width: 100%;
+        height: 75px;
+        background: #000;
+        color: white;
+        border: none;
+        border-radius: 12px;
+        margin-bottom: 15px;
+        padding: 10px;
+        text-align: right;
+        font-size: 32px;
+        outline: none;
+    }
+
+    .buttons {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 10px;
+    }
+
+    button {
+        height: 60px;
+        border: none;
+        border-radius: 15px;
+        font-size: 21px;
+        font-weight: bold;
+        cursor: pointer;
+        background: #333;
+        color: white;
+        transition: 0.1s;
+    }
+
+    button:hover {
+        background: #444;
+    }
+
+    button:active {
+        transform: scale(0.94);
+    }
+
+    .operator {
+        background: #ff9500;
+    }
+
+    .operator:hover {
+        background: #ffad33;
+    }
+
+    .special {
+        background: #777;
+    }
+
+    .equal {
+        background: #00a86b;
+    }
+
+    .equal:hover {
+        background: #00c77d;
+    }
+
+    .zero {
+        grid-column: span 2;
+    }
+</style>
+</head>
+
+<body>
+
+<div class="calculator">
+
+    <div class="title">🧮 Ansari Calculator</div>
+
+    <input type="text" id="display" class="display" value="0" readonly>
+
+    <div class="buttons">
+
+        <button class="special" onclick="clearDisplay()">AC</button>
+        <button class="special" onclick="backspace()">⌫</button>
+        <button class="special" onclick="percentage()">%</button>
+        <button class="operator" onclick="addOperator('/')">÷</button>
+
+        <button onclick="addNumber('7')">7</button>
+        <button onclick="addNumber('8')">8</button>
+        <button onclick="addNumber('9')">9</button>
+        <button class="operator" onclick="addOperator('*')">×</button>
+
+        <button onclick="addNumber('4')">4</button>
+        <button onclick="addNumber('5')">5</button>
+        <button onclick="addNumber('6')">6</button>
+        <button class="operator" onclick="addOperator('-')">−</button>
+
+        <button onclick="addNumber('1')">1</button>
+        <button onclick="addNumber('2')">2</button>
+        <button onclick="addNumber('3')">3</button>
+        <button class="operator" onclick="addOperator('+')">+</button>
+
+        <button class="zero" onclick="addNumber('0')">0</button>
+        <button onclick="addNumber('.')">.</button>
+        <button class="equal" onclick="calculate()">=</button>
+
+    </div>
+
+</div>
+
+<script>
+
+let display = document.getElementById("display");
+let expression = "";
+
+function addNumber(number) {
+
+    if (expression === "Error") {
+        expression = "";
+    }
+
+    if (number === ".") {
+
+        let currentNumber = expression.split(/[+\-*/]/).pop();
+
+        if (currentNumber.includes(".")) {
+            return;
+        }
+
+        if (currentNumber === "") {
+            expression += "0";
+        }
+    }
+
+    expression += number;
+    display.value = expression;
+}
+
+
+function addOperator(operator) {
+
+    if (expression === "" || expression === "Error") {
+        return;
+    }
+
+    let lastCharacter = expression.slice(-1);
+
+    if ("+-*/".includes(lastCharacter)) {
+        expression = expression.slice(0, -1);
+    }
+
+    expression += operator;
+    display.value = expression;
+}
+
+
+function clearDisplay() {
+
+    expression = "";
+    display.value = "0";
+}
+
+
+function backspace() {
+
+    if (expression === "Error") {
+        clearDisplay();
+        return;
+    }
+
+    expression = expression.slice(0, -1);
+
+    if (expression === "") {
+        display.value = "0";
+    } else {
+        display.value = expression;
+    }
+}
+
+
+function percentage() {
+
+    if (expression === "") {
+        return;
+    }
+
+    try {
+        expression = String(eval(expression) / 100);
+        display.value = expression;
+    } catch {
+        expression = "Error";
+        display.value = expression;
+    }
+}
+
+
+function calculate() {
+
+    if (expression === "") {
+        return;
+    }
+
+    try {
+
+        let result = eval(expression);
+
+        if (!isFinite(result)) {
+            throw new Error();
+        }
+
+        result = Math.round(result * 100000000) / 100000000;
+
+        expression = String(result);
+        display.value = expression;
+
+    } catch {
+
+        expression = "Error";
+        display.value = "Error";
+    }
+}
+
+
+/* Keyboard support */
+
+document.addEventListener("keydown", function(event) {
+
+    let key = event.key;
+
+    if (!isNaN(key) || key === ".") {
+        addNumber(key);
+    }
+
+    else if ("+-*/".includes(key)) {
+        addOperator(key);
+    }
+
+    else if (key === "Enter" || key === "=") {
+        calculate();
+    }
+
+    else if (key === "Backspace") {
+        backspace();
+    }
+
+    else if (key === "Escape") {
+        clearDisplay();
+    }
+
+    else if (key === "%") {
+        percentage();
+    }
+
+});
+
+</script>
+
+</body>
+</html>
